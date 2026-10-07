@@ -41,6 +41,80 @@ fn mapping() -> Value {
 }
 
 #[tokio::test]
+async fn dashboard_and_statistics_follow_search_snapshot() {
+    let dir = tempfile::tempdir().unwrap();
+    let app = strata_search::router(dir.path()).unwrap();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/_dashboard")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), 200);
+    assert_eq!(
+        response.headers()["content-type"],
+        "text/html; charset=utf-8"
+    );
+    assert!(
+        response.headers()["content-security-policy"]
+            .to_str()
+            .unwrap()
+            .contains("frame-ancestors 'none'")
+    );
+    let body = to_bytes(response.into_body(), 4 * 1024 * 1024)
+        .await
+        .unwrap();
+    assert!(String::from_utf8_lossy(&body).contains("Strata search"));
+    assert_eq!(
+        request(&app, "GET", "/", Value::Null).await["name"],
+        "strata"
+    );
+    assert_eq!(
+        request(&app, "GET", "/_indexes", Value::Null).await,
+        json!({"indexes":[]})
+    );
+    request(&app, "PUT", "/books", mapping()).await;
+    let initial = request(&app, "GET", "/_indexes", Value::Null).await;
+    assert_eq!(initial["indexes"][0]["documents"], 0);
+    assert_eq!(initial["indexes"][0]["mappings"], mapping()["mappings"]);
+    let (status, _) = raw(&app, "POST", "/books/_bulk",
+        "{\"index\":{\"_id\":\"a\"}}\n{\"title\":\"Rust\"}\n{\"index\":{\"_id\":\"b\"}}\n{\"title\":\"Search\"}\n".into()).await;
+    assert_eq!(status, 200);
+    assert_eq!(
+        request(&app, "GET", "/_indexes", Value::Null).await,
+        initial
+    );
+    request(&app, "POST", "/books/_refresh", json!({})).await;
+    let refreshed = request(&app, "GET", "/_indexes", Value::Null).await;
+    assert_eq!(refreshed["indexes"][0]["documents"], 2);
+    assert_eq!(refreshed["indexes"][0]["segments"], 1);
+    assert_eq!(refreshed["indexes"][0]["failed"], false);
+    assert_ne!(
+        refreshed["indexes"][0]["generation"],
+        initial["indexes"][0]["generation"]
+    );
+    request(&app, "DELETE", "/books/_doc/a", Value::Null).await;
+    assert_eq!(
+        request(&app, "GET", "/_indexes", Value::Null).await,
+        refreshed
+    );
+    request(&app, "POST", "/books/_refresh", json!({})).await;
+    let deleted = request(&app, "GET", "/_indexes", Value::Null).await;
+    assert_eq!(deleted["indexes"][0]["documents"], 1);
+    assert_eq!(deleted["indexes"][0]["deleted_documents"], 1);
+    drop(app);
+    let app = strata_search::router(dir.path()).unwrap();
+    assert_eq!(
+        request(&app, "GET", "/_indexes", Value::Null).await,
+        deleted
+    );
+}
+
+#[tokio::test]
 async fn durable_crud_refresh_cursors_and_restart() {
     let dir = tempfile::tempdir().unwrap();
     let app = strata_search::router(dir.path()).unwrap();

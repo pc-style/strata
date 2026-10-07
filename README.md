@@ -27,6 +27,29 @@ do not expose it directly to a network. One process owns each data directory.
 Build Strata from source. Its manual-only release workflow creates a GitHub source release
 after CI passes; it does not publish a crate or deploy a running service.
 
+## Dashboard
+
+Open `http://127.0.0.1:9200/_dashboard` while Strata is running. Browse an index,
+search a text field, expand document sources and continue through result pages.
+**Dev mode** adds JSON queries (including filters and sorting), mappings, snapshot
+document/deletion/segment counts, generation, and request/response inspection.
+Timing is browser round-trip time, not engine execution time. Reloading the index
+list reads statistics; it does not refresh or mutate the search index.
+
+The dashboard is embedded in the binary and needs no external assets or frontend
+server. `GET /` remains the JSON API identity. To modify the frontend:
+
+```sh
+cd dashboard
+bun install --frozen-lockfile
+bun run build
+```
+
+Commit `dashboard/dist/index.html` with source changes, then rebuild the Rust binary.
+CI checks that the embedded bundle matches its sources.
+With `agent-browser` and its browser installed, `python3 scripts/dashboard-smoke.py`
+checks the UI against a temporary server and disposable data, then stops both.
+
 ## Index, write, search
 
 ```sh

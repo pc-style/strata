@@ -12,6 +12,19 @@ env:
   RUSTFLAGS: '-C target-cpu=generic'
 
 jobs:
+  dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.0'
+      - run: bun install --frozen-lockfile
+        working-directory: dashboard
+      - run: bun run build
+        working-directory: dashboard
+      - run: git diff --exit-code -- dashboard/dist/index.html
+
   lint:
     runs-on: ubuntu-latest
     steps:

@@ -3,3 +3,6 @@
 /.env*
 .DS_Store
 __pycache__/
+/dashboard/node_modules/
+/strata-demo-data/
+/.amp/portals/

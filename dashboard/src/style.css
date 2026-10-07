@@ -1,0 +1,250 @@
+@import "tailwindcss" source(".");
+@theme {
+  --font-sans: "IBM Plex Sans", sans-serif;
+}
+:root {
+  font-family: "IBM Plex Sans", sans-serif;
+  color: oklch(0.31 0.034 256);
+  background: oklch(0.976 0.004 256);
+  --surface: white;
+  --muted: oklch(0.48 0.035 256);
+  --line: oklch(0.83 0.018 256);
+  --accent: oklch(0.48 0.13 257);
+  --error: oklch(0.46 0.16 26);
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-size: 16px;
+}
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 28px;
+}
+header {
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 28px;
+}
+h1 {
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.8px;
+  margin: 0;
+}
+h2 {
+  font-size: 19px;
+  font-weight: 500;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.muted,
+dt,
+footer {
+  color: var(--muted);
+  font-size: 14px;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+input,
+select,
+textarea,
+button {
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 9px 12px;
+  min-height: 40px;
+  color: inherit;
+}
+select {
+  min-width: 160px;
+  max-width: 100%;
+}
+input,
+textarea {
+  width: 100%;
+}
+input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  accent-color: var(--accent);
+}
+.toggle {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  font-weight: 400;
+}
+button,
+summary {
+  cursor: pointer;
+}
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: oklch(0.96 0.014 257);
+}
+.primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  padding-inline: 24px;
+}
+.primary:hover:not(:disabled) {
+  background: oklch(0.4 0.13 257);
+  color: white;
+}
+button:disabled,
+fieldset:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.toolbar {
+  margin-bottom: 28px;
+}
+.count {
+  margin-left: auto;
+  padding-bottom: 10px;
+}
+.searchline {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+}
+.grow {
+  flex: 1;
+  min-width: 0;
+}
+.mode {
+  margin-bottom: 12px;
+}
+.result-status {
+  margin: 28px 0 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+article {
+  border-top: 1px solid var(--line);
+  padding: 20px 0;
+}
+.preview {
+  margin: 6px 0 12px;
+  color: var(--muted);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+summary {
+  font-size: 14px;
+  padding: 5px 0;
+  min-height: 30px;
+}
+pre,
+textarea {
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+}
+pre {
+  background: var(--surface);
+  padding: 16px;
+  overflow: auto;
+  max-height: 360px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border-radius: 4px;
+}
+textarea {
+  resize: vertical;
+}
+.empty {
+  padding: 24px 0;
+}
+.empty p {
+  color: var(--muted);
+  max-width: 64ch;
+}
+.error {
+  color: var(--error);
+  border-left: 3px solid var(--error);
+  padding: 12px;
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+.inspector {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin: 24px 0;
+}
+dd {
+  font-size: 23px;
+  font-variant-numeric: tabular-nums;
+  margin: 4px 0 0;
+}
+.timing {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.json-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.json-grid > * {
+  min-width: 0;
+}
+.next {
+  margin-top: 12px;
+}
+footer {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+  margin-top: 40px;
+}
+@media (max-width: 620px) {
+  main {
+    padding: 20px 16px;
+  }
+  .searchline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .count {
+    margin-left: 0;
+  }
+  .stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .json-grid {
+    grid-template-columns: 1fr;
+  }
+  header {
+    gap: 12px;
+  }
+}

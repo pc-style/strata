@@ -6,7 +6,7 @@ use axum::{
     Json, Router,
     extract::{DefaultBodyLimit, Path, Query as Params, State, rejection::JsonRejection},
     http::StatusCode,
-    response::{IntoResponse, Response},
+    response::{Html, IntoResponse, Response},
     routing::{get, post, put},
 };
 use lucene_rs::{
@@ -374,6 +374,11 @@ pub fn router(data: impl AsRef<FsPath>) -> Result<Router> {
     Ok(Router::new()
         .route("/", get(|| async { Json(json!({"name":"strata","version":env!("CARGO_PKG_VERSION"),"compatibility":"Elasticsearch-inspired, not API-compatible"})) }))
         .route("/_health", get(|| async { Json(json!({"status":"ok"})) }))
+        .route("/_dashboard", get(|| async { (
+            [("cache-control", "no-cache"), ("x-content-type-options", "nosniff"), ("content-security-policy", "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; font-src data:; connect-src 'self'; img-src data:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'")],
+            Html(include_str!("../dashboard/dist/index.html")),
+        ) }))
+        .route("/_indexes", get(indexes))
         .route("/{index}", put(create).get(mapping))
         .route("/{index}/_doc/{id}", put(index_document).get(get_document).delete(delete_document))
         .route("/{index}/_refresh", post(refresh))
@@ -381,6 +386,23 @@ pub fn router(data: impl AsRef<FsPath>) -> Result<Router> {
         .route("/{index}/_bulk", post(bulk))
         .layer(DefaultBodyLimit::max(2 * 1024 * 1024))
         .with_state(state))
+}
+
+async fn indexes(State(state): State<Shared>) -> Result<Json<Value>> {
+    work(state, |catalog| {
+        let indexes: Vec<_> = catalog
+            .indexes
+            .iter()
+            .map(|(name, index)| {
+                let reader = index.searcher.reader();
+                json!({"name":name,"documents":reader.num_docs(),
+                "deleted_documents":reader.num_deleted_docs(),"segments":reader.segments().len(),
+                "generation":reader.generation(),"failed":index.failed,"mappings":index.mappings})
+            })
+            .collect();
+        Ok(json!({"indexes":indexes}))
+    })
+    .await
 }
 
 #[derive(Default, Deserialize)]

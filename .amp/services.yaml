@@ -1,0 +1,9 @@
+services:
+  strata:
+    command: 'exec ./target/debug/strata --data ./strata-demo-data --listen "127.0.0.1:$PORT"'
+    health: /_health
+    review: false
+    portal:
+      url: /_dashboard
+      title: Strata demo
+      description: Search disposable demo indexes and toggle Dev mode for query inspection.
